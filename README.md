@@ -7,44 +7,34 @@ TOTO is a chess engine implemented in C. This project aims to provide a robust a
 ```
 TOTO
 ├── src
-│   ├── toto.c        # Implementation of toto engine
-├── tests
-│   ├── test_toto.cpp    # Unit tests for the Board class
-├── CMakeLists.txt       # CMake configuration file
-└── README.md            # Documentation for the project
+│   ├── toto.c     # Implementation of toto engine
+├── makefile       # Make configuration file
+└── README.md      # Documentation for the project
 ```
 
 ## Setup Instructions
 
 1. **Clone the repository:**
    ```
-   git clone https://github.com/yourusername/TOTO.git
-   cd TOTO
+   git clone https://github.com/Brxj19/TOTO-Chess-Engine.git   #for https
+   git clone git@github.com:Brxj19/TOTO-Chess-Engine.git       #for SSH
+   cd TOTO-Chess-Engine
    ```
 
-2. **Build the project using CMake:**
+2. **Build the project using Make:**
    ```
-   mkdir build
-   cd build
-   cmake ..
    make
    ```
 
 3. **Run the application:**
    ```
-   ./TOTO
+   ./tce
    ```
 
 ## Usage
 
 - The chess engine can be run from the command line. Follow the prompts to make moves and interact with the engine.
 
-## Testing
-
-- To run the unit tests, navigate to the `build` directory and execute:
-   ```
-   make test
-   ```
 
 ## Contributing
 
