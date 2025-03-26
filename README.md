@@ -1,20 +1,15 @@
 # TOTO Chess Engine
 
-TOTO is a chess engine implemented in C++. This project aims to provide a robust and efficient representation of a chessboard, along with the necessary logic to play and evaluate chess games.
+TOTO is a chess engine implemented in C. This project aims to provide a robust and efficient representation of a chessboard, along with the necessary logic to play and evaluate chess games.
 
 ## Project Structure
 
 ```
 TOTO
 ├── src
-│   ├── board.cpp        # Implementation of the board representation
-│   ├── board.h          # Header file for the Board class
-│   ├── engine.cpp       # Implementation of the chess engine logic
-│   ├── engine.h         # Header file for the Engine class
-│   └── main.cpp         # Entry point for the application
+│   ├── toto.c        # Implementation of toto engine
 ├── tests
-│   ├── board_test.cpp    # Unit tests for the Board class
-│   └── engine_test.cpp    # Unit tests for the Engine class
+│   ├── test_toto.cpp    # Unit tests for the Board class
 ├── CMakeLists.txt       # CMake configuration file
 └── README.md            # Documentation for the project
 ```

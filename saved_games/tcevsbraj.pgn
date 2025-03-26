@@ -1,0 +1,31 @@
+[Event "?"]
+[Site "?"]
+[Date "2025.03.12"]
+[Round "?"]
+[White "TCE"]
+[Black "Brajesh"]
+[Result "1-0"]
+[ECO "A01"]
+[GameDuration "00:03:25"]
+[GameEndTime "2025-03-12T12:58:48.002 GMT+5:30"]
+[GameStartTime "2025-03-12T12:55:22.459 GMT+5:30"]
+[Opening "Nimzowitsch-Larsen attack"]
+[PlyCount "87"]
+[TimeControl "40/300"]
+[Variation "Modern variation"]
+
+1. b3 e5 {3.7s} 2. Bb2 {1.4s} Nc6 {2.8s} 3. e3 {1.0s} Nf6 {2.6s} 4. Nf3 {1.1s}
+e4 {3.3s} 5. Nd4 {1.5s} Bc5 {2.5s} 6. f3 {1.7s} d5 {5.4s} 7. fxe4 {1.0s}
+dxe4 {1.2s} 8. Bb5 {2.0s} Bd7 {3.0s} 9. Nxc6 {1.4s} bxc6 {1.6s} 10. Be2 {1.2s}
+O-O {4.1s} 11. c4 {1.2s} Qe7 {2.1s} 12. O-O {1.6s} Rab8 {10s} 13. a4 {1.4s}
+Bd6 {5.6s} 14. d4 {1.0s} exd3 {2.0s} 15. Qxd3 {4.2s} Ng4 {15s} 16. Bxg4 {3.4s}
+Bxg4 {2.7s} 17. Bxg7 {2.3s} Kxg7 {5.8s} 18. Qd4+ {1.6s} Kg8 {0.93s} 19. Qxg4+
+Kh8 {2.2s} 20. Re1 {3.8s} Qe5 {1.6s} 21. Qd4 {9.8s} Qxd4 {6.1s} 22. exd4
+Rg8 {3.5s} 23. c5 Bf4 {2.3s} 24. Re4 {0.88s} Bh6 {8.4s} 25. Na3 {0.69s}
+Rg6 {2.8s} 26. Nc4 Rbg8 {2.0s} 27. g3 f5 {3.2s} 28. Re7 f4 {2.2s} 29. Ne5
+Rf6 {5.7s} 30. Nf7+ Kg7 {2.8s} 31. Nxh6+ Kxh6 {1.3s} 32. Rxc7 fxg3 {2.7s}
+33. hxg3 Rxg3+ {1.9s} 34. Kh2 Rxb3 {2.1s} 35. Rh1 Rf2+ {2.6s} 36. Kg1+
+Kg6 {7.2s} 37. Kxf2 Rb2+ {6.5s} 38. Ke3 Ra2 {3.3s} 39. Rxc6+ Kf5 {2.6s} 40. Rh5+
+Kg4 {1.6s} 41. Rxh7 Rxa4 {2.1s} 42. Rcc7 a5 {3.2s} 43. Ke4 Rb4 {2.9s}
+44. Rcg7# {White mates} 1-0
+

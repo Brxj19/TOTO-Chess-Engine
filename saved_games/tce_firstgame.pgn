@@ -1,0 +1,18 @@
+[Event "?"]
+[Site "?"]
+[Date "2025.03.11"]
+[Round "?"]
+[White "Brajesh"]
+[Black "TCE(by Brxj19)"]
+[Result "1-0"]
+[ECO "D00"]
+[GameDuration "00:00:32"]
+[GameEndTime "2025-03-11T23:02:35.246 GMT+5:30"]
+[GameStartTime "2025-03-11T23:02:03.014 GMT+5:30"]
+[Opening "Queen's pawn game"]
+[PlyCount "3"]
+[Termination "illegal move"]
+[TimeControl "40/300"]
+
+1. d4 d5 2. e3 {16s, Black makes an illegal move: d7d5} 1-0
+
