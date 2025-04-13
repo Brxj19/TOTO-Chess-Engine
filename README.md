@@ -16,8 +16,7 @@ TOTO
 
 1. **Clone the repository:**
    ```
-   git clone https://github.com/Brxj19/TOTO-Chess-Engine.git   #for https
-   git clone git@github.com:Brxj19/TOTO-Chess-Engine.git       #for SSH
+   git clone https://github.com/Brxj19/TOTO-Chess-Engine.git         
    cd TOTO-Chess-Engine
    ```
 
