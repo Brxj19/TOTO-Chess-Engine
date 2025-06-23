@@ -52,7 +52,8 @@ enum {
     a4, b4, c4, d4, e4, f4, g4, h4,
     a3, b3, c3, d3, e3, f3, g3, h3,
     a2, b2, c2, d2, e2, f2, g2, h2,
-    a1, b1, c1, d1, e1, f1, g1, h1, no_sq
+    a1, b1, c1, d1, e1, f1, g1, h1, 
+    no_sq
 };
 
 // encode pieces
@@ -329,7 +330,7 @@ int get_time_ms()
   OS dependent.
   
   First Richard Allbert aka BluefeverSoftware grabbed it from somewhere...
-  And then Code Monkey King has grabbed it from VICE)
+  
   
 */
   
@@ -2625,10 +2626,10 @@ void perft_test(int depth)
  ==================================
 \**********************************/
 
-// convert BBC piece code to Stockfish piece codes
+// convert TCE piece code to Stockfish piece codes
 int nnue_pieces[12] = { 6, 5, 4, 3, 2, 1, 12, 11, 10, 9, 8, 7 };
 
-// convert BBC square indices to Stockfish indices
+// convert TCE square indices to Stockfish indices
 int nnue_squares[64] = {
     a1, b1, c1, d1, e1, f1, g1, h1,
 	a2, b2, c2, d2, e2, f2, g2, h2,
@@ -3717,7 +3718,7 @@ void search_position(int depth)
 /**********************************\
  ==================================
  
-                UCI
+              UCI commands
                 
  ==================================
 \**********************************/
@@ -3784,6 +3785,8 @@ int parse_move(char *move_string)
     // return illegal move
     return 0;
 }
+
+
 
 // parse UCI "position" command
 void parse_position(char *command)
