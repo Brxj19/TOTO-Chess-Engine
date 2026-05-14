@@ -1,4 +1,5 @@
 numpy
 python-chess
 pandas
+torch
 tqdm

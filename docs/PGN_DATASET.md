@@ -157,6 +157,36 @@ To refresh the checked-in sample vectors:
 python3 tools/nnue_train/build_features.py --write-sample-vectors
 ```
 
+## Train Baseline NNUE
+
+After building sparse features, run the baseline PyTorch trainer. This stage trains a simple NNUE-like model only. It does not quantize the network, export `.tcennue`, or modify the C/C++ engine.
+
+Smoke test:
+
+```sh
+python3 tools/nnue_train/train_nnue.py \
+  --data data/nnue/lichess_2013_01_features.npz \
+  --output-dir data/nnue_runs/smoke \
+  --epochs 1 \
+  --batch-size 256 \
+  --lr 0.001 \
+  --val-split 0.1 \
+  --target-scale 1000
+```
+
+The trainer reads `eval_cp` from the feature `.npz`, normalizes it by `--target-scale`, clamps normalized targets to `[-2.0, 2.0]`, and reports validation MAE in centipawns.
+
+Training output:
+
+```text
+checkpoints/best.pt
+checkpoints/last.pt
+metrics.csv
+config.json
+```
+
+These generated run directories should stay under `data/` and should not be committed.
+
 ## CLI Arguments
 
 ```text
