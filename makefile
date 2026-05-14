@@ -2,9 +2,9 @@ CC = gcc
 CXX = g++
 CFLAGS = -O3 -ffast-math -Iinclude -I.
 CXXFLAGS = -O3 -ffast-math -Iinclude -I.
-LDFLAGS = -lstdc++
+LDFLAGS = -lstdc++ -lm
 
-SRC = toto.c nnue_eval.c nnue/nnue.cpp nnue/misc.cpp
+SRC = toto.c nnue_eval.c nnue/nnue.cpp nnue/misc.cpp tce_nnue/tce_nnue.c tce_nnue/tce_nnue_loader.c tce_nnue/tce_nnue_network.c tce_nnue/tce_nnue_accumulator.c tce_nnue/tce_nnue_features.c
 OBJ = $(SRC:.c=.o)
 OBJ := $(OBJ:.cpp=.o)
 

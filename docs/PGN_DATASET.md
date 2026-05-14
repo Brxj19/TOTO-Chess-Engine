@@ -255,6 +255,28 @@ make check-tcennue-infer \
 
 This stage still does not call the new NNUE from `evaluate()`, does not modify search, and does not remove the Stockfish NNUE integration.
 
+## Optional Engine Backend Smoke Test
+
+TCE can optionally load the TCE-owned `.tcennue` backend through UCI. Stockfish NNUE remains the default backend, so this only changes evaluation when `EvalBackend` is explicitly set to `tce`.
+
+```sh
+make
+./tce
+uci
+setoption name EvalBackend value tce
+setoption name EvalFile value data/nnue_runs/baseline/tce_baseline.tcennue
+isready
+position startpos
+go depth 1
+```
+
+To return to the default backend in the same session:
+
+```text
+setoption name EvalBackend value stockfish
+setoption name EvalFile value nn-eba324f53044.nnue
+```
+
 ## CLI Arguments
 
 ```text

@@ -28,6 +28,7 @@
 
 // include NNUE wrapper header
 #include "nnue_eval.h"
+#include "tce_nnue/tce_nnue.h"
 
 // define version
 #define version " -1.0 + SF NNUE"
@@ -267,6 +268,11 @@ int ply;
 int fifty;
 
 char evalFile[256] = "nn-eba324f53044.nnue"; // default path
+
+enum { eval_backend_stockfish, eval_backend_tce };
+int evalBackend = eval_backend_stockfish;
+int tceNnueLoaded = 0;
+int tceNnueFallbackWarned = 0;
 
 
 /**********************************\
@@ -2646,6 +2652,118 @@ int nnue_squares[64] = {
 	a8, b8, c8, d8, e8, f8, g8, h8
 };
 
+static inline int tce_feature_piece_type(int piece, int perspective)
+{
+    int piece_color = (piece <= K) ? white : black;
+    int piece_kind = piece % 6;
+    int type = 0;
+
+    switch (piece_kind)
+    {
+        case P: type = 0; break;
+        case N: type = 1; break;
+        case B: type = 2; break;
+        case R: type = 3; break;
+        case Q: type = 4; break;
+        case K: type = 5; break;
+    }
+
+    if (piece_color != perspective)
+        type += 6;
+
+    return type;
+}
+
+static inline int tce_python_square(int square)
+{
+    return square ^ 56;
+}
+
+static inline int tce_oriented_square(int square, int perspective)
+{
+    int py_square = tce_python_square(square);
+    return (perspective == white) ? py_square : (py_square ^ 63);
+}
+
+static int build_tce_nnue_features(
+    int *white_features,
+    int *white_count,
+    int *black_features,
+    int *black_count
+)
+{
+    U64 bitboard;
+    int white_king_square = -1;
+    int black_king_square = -1;
+    int wcount = 0;
+    int bcount = 0;
+
+    if (!white_features || !black_features || !white_count || !black_count)
+        return 1;
+
+    if (bitboards[K])
+        white_king_square = get_ls1b_index(bitboards[K]);
+    if (bitboards[k])
+        black_king_square = get_ls1b_index(bitboards[k]);
+
+    if (white_king_square == -1 || black_king_square == -1)
+        return 1;
+
+    int white_king_bucket = tce_oriented_square(white_king_square, white);
+    int black_king_bucket = tce_oriented_square(black_king_square, black);
+
+    for (int bb_piece = P; bb_piece <= k; bb_piece++)
+    {
+        if (bb_piece == K || bb_piece == k)
+            continue;
+
+        bitboard = bitboards[bb_piece];
+        while (bitboard)
+        {
+            int square = get_ls1b_index(bitboard);
+            int white_piece_type = tce_feature_piece_type(bb_piece, white);
+            int black_piece_type = tce_feature_piece_type(bb_piece, black);
+            int white_square = tce_oriented_square(square, white);
+            int black_square = tce_oriented_square(square, black);
+
+            white_features[wcount++] =
+                (white_king_bucket * 12 + white_piece_type) * 64 + white_square;
+            black_features[bcount++] =
+                (black_king_bucket * 12 + black_piece_type) * 64 + black_square;
+
+            pop_bit(bitboard, square);
+        }
+    }
+
+    *white_count = wcount;
+    *black_count = bcount;
+    return 0;
+}
+
+static int evaluate_tce_nnue_backend(int *score)
+{
+    int white_features[32];
+    int black_features[32];
+    int white_count = 0;
+    int black_count = 0;
+
+    if (!tceNnueLoaded)
+        return 1;
+
+    if (build_tce_nnue_features(white_features, &white_count,
+                                black_features, &black_count))
+        return 1;
+
+    return tce_nnue_evaluate_sparse(
+        white_features,
+        white_count,
+        black_features,
+        black_count,
+        side,
+        score
+    );
+}
+
 // position evaluation
 static inline int evaluate()
 {    
@@ -2732,6 +2850,26 @@ static inline int evaluate()
     pieces[index] = 0;
     squares[index] = 0;
     
+    int nnue_score;
+
+    if (evalBackend == eval_backend_tce)
+    {
+        if (evaluate_tce_nnue_backend(&nnue_score))
+        {
+            if (!tceNnueFallbackWarned)
+            {
+                printf("info string TCE NNUE unavailable, falling back to Stockfish NNUE\n");
+                fflush(stdout);
+                tceNnueFallbackWarned = 1;
+            }
+            nnue_score = evaluate_nnue(side, pieces, squares);
+        }
+    }
+    else
+    {
+        nnue_score = evaluate_nnue(side, pieces, squares);
+    }
+
     /*
         We need to make sure that fifty rule move counter gives a penalty
         to the evaluation, otherwise it won't be capable of mating in
@@ -2740,7 +2878,7 @@ static inline int evaluate()
     */
     
     // get NNUE score (final score! No need to adjust by the side!)
-    return (evaluate_nnue(side, pieces, squares) * (100 - fifty) / 100);
+    return (nnue_score * (100 - fifty) / 100);
 }
 
 
@@ -4001,6 +4139,85 @@ void parse_go(char *command)
     search_position(depth);
 }
 
+static void set_eval_file_path(const char *path)
+{
+    strncpy(evalFile, path, sizeof(evalFile) - 1);
+    evalFile[sizeof(evalFile) - 1] = '\0';
+}
+
+static int has_tcennue_extension(const char *path)
+{
+    size_t len = strlen(path);
+    const char *extension = ".tcennue";
+    size_t extension_len = strlen(extension);
+
+    return len >= extension_len &&
+           strcmp(path + len - extension_len, extension) == 0;
+}
+
+static int load_tce_eval_file(const char *path)
+{
+    if (tce_nnue_load(path) == 0)
+    {
+        tceNnueLoaded = 1;
+        tceNnueFallbackWarned = 0;
+        printf("info string loaded TCE NNUE %s\n", path);
+        fflush(stdout);
+        return 0;
+    }
+
+    printf("info string failed to load TCE NNUE %s; keeping previous evaluator\n", path);
+    fflush(stdout);
+    return 1;
+}
+
+static void set_eval_backend(const char *backend)
+{
+    if (strcmp(backend, "stockfish") == 0)
+    {
+        evalBackend = eval_backend_stockfish;
+        tceNnueFallbackWarned = 0;
+        init_nnue(evalFile);
+        printf("info string EvalBackend set to stockfish\n");
+        fflush(stdout);
+    }
+    else if (strcmp(backend, "tce") == 0)
+    {
+        evalBackend = eval_backend_tce;
+        tceNnueFallbackWarned = 0;
+        if (!tceNnueLoaded && has_tcennue_extension(evalFile))
+            load_tce_eval_file(evalFile);
+        else if (!tceNnueLoaded)
+        {
+            printf("info string EvalBackend tce selected; set EvalFile to a .tcennue file\n");
+            fflush(stdout);
+        }
+        printf("info string EvalBackend set to tce\n");
+        fflush(stdout);
+    }
+    else
+    {
+        printf("info string unknown EvalBackend %s\n", backend);
+        fflush(stdout);
+    }
+}
+
+static void set_eval_file(const char *path)
+{
+    if (evalBackend == eval_backend_tce)
+    {
+        if (load_tce_eval_file(path) == 0)
+            set_eval_file_path(path);
+    }
+    else
+    {
+        set_eval_file_path(path);
+        init_nnue(evalFile);
+        printf("info string loaded Stockfish NNUE %s\n", evalFile);
+        fflush(stdout);
+    }
+}
+
 // main UCI loop
 void uci_loop()
 {
@@ -4081,6 +4298,7 @@ void uci_loop()
             printf("id name TCE %s\n", version);
             printf("id author Brxj19\n");
             printf("option name Hash type spin default 64 min 4 max %d\n", max_hash);
+            printf("option name EvalBackend type combo default stockfish var stockfish var tce\n");
             printf("option name EvalFile type string default nn-eba324f53044.nnue\n");
             printf("option name Depth type spin default 64 min 1 max 64\n");
             printf("uciok\n");
@@ -4097,15 +4315,15 @@ void uci_loop()
             printf("    Set hash table size to %dMB\n", mb);
             init_hash_table(mb);
         }
+        else if (strstr(input, "setoption name EvalBackend") != NULL) {
+            char value[32];
+            if (sscanf(input, "setoption name EvalBackend value %31s", value) == 1)
+                set_eval_backend(value);
+        }
         else if (strstr(input, "setoption name EvalFile") != NULL) {
             char value[256];
-            if (sscanf(input, "setoption name EvalFile value %255s", value) == 1) {
-                strncpy(evalFile, value, sizeof(evalFile) - 1);
-                evalFile[sizeof(evalFile) - 1] = '\0';
-                // printf("info string EvalFile set to %s\n", evalFile);
-                fflush(stdout);
-                // TODO: actually load the NNUE file here
-            }
+            if (sscanf(input, "setoption name EvalFile value %255s", value) == 1)
+                set_eval_file(value);
         }
         else if (strstr(input, "setoption name Depth") != NULL)
         {
