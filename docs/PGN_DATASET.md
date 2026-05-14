@@ -277,6 +277,15 @@ setoption name EvalBackend value stockfish
 setoption name EvalFile value nn-eba324f53044.nnue
 ```
 
+Automated backend regression:
+
+```sh
+python3 tools/nnue_train/test_eval_backends.py \
+  --engine ./tce \
+  --tcennue data/nnue_runs/baseline/tce_baseline.tcennue \
+  --depth 2
+```
+
 ## CLI Arguments
 
 ```text
