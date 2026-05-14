@@ -1,0 +1,14 @@
+# Local Python environments
+.venv/
+venv/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Local NNUE datasets and generated labels/features
+data/
+
+# Local editor/OS noise
+.DS_Store
+
