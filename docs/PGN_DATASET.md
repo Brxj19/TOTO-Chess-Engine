@@ -189,7 +189,7 @@ These generated run directories should stay under `data/` and should not be comm
 
 ## Quantize And Export `.tcennue`
 
-After training a baseline checkpoint, quantize the PyTorch weights and export a deterministic TCE-owned `.tcennue` binary. This stage is Python-side only. The exported file is not integrated into the engine yet, and TCE will continue using the current engine evaluation path until the C/C++ loader and inference code are implemented.
+After training a baseline checkpoint, quantize the PyTorch weights and export a deterministic TCE-owned `.tcennue` binary. The exported file is not integrated into engine evaluation yet, and TCE continues using the current Stockfish NNUE path.
 
 Export:
 
@@ -229,6 +229,31 @@ output_bias
 ```
 
 Weights are quantized to `int16`; biases are stored as `int32`. Generated `.tcennue` files should stay under `data/` and should not be committed.
+
+## Standalone C Scalar Inference
+
+The C-side loader and scalar inference path can be tested without changing engine behavior. This standalone path loads `.tcennue`, consumes sparse feature IDs, and compares C predictions against Python-generated quantized test vectors.
+
+Dump inference vectors:
+
+```sh
+python3 tools/nnue_train/dump_inference_vectors.py \
+  --data data/nnue/lichess_2013_01_features.npz \
+  --checkpoint data/nnue_runs/baseline/checkpoints/best.pt \
+  --tcennue data/nnue_runs/baseline/tce_baseline.tcennue \
+  --output tools/nnue_train/test_vectors/inference_sample.json \
+  --samples 16
+```
+
+Run C parity check:
+
+```sh
+make check-tcennue-infer \
+  FILE=data/nnue_runs/baseline/tce_baseline.tcennue \
+  VECTORS=tools/nnue_train/test_vectors/inference_sample.json
+```
+
+This stage still does not call the new NNUE from `evaluate()`, does not modify search, and does not remove the Stockfish NNUE integration.
 
 ## CLI Arguments
 
