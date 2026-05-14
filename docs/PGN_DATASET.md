@@ -286,6 +286,16 @@ python3 tools/nnue_train/test_eval_backends.py \
   --depth 2
 ```
 
+Backend benchmark:
+
+```sh
+python3 tools/nnue_train/benchmark_eval_backends.py \
+  --engine ./tce \
+  --tcennue data/nnue_runs/baseline/tce_baseline.tcennue \
+  --depth 4 \
+  --output data/nnue_runs/backend_benchmark.csv
+```
+
 ## CLI Arguments
 
 ```text
