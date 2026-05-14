@@ -1278,11 +1278,11 @@ DLLExport void _CDECL nnue_init(const char* evalFile)
   if (loadedFile)
     free(loadedFile);
 
-  printf("Loading NNUE : %s\n", evalFile);
+  // printf("Loading NNUE : %s\n", evalFile);
   fflush(stdout);
   if (load_eval_file(evalFile)) {
     loadedFile = strdup(evalFile);
-    printf("NNUE loaded !\n");
+    // printf("NNUE loaded !\n");
     fflush(stdout);
     return;
   }
