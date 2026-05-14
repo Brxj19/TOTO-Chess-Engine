@@ -187,6 +187,49 @@ config.json
 
 These generated run directories should stay under `data/` and should not be committed.
 
+## Quantize And Export `.tcennue`
+
+After training a baseline checkpoint, quantize the PyTorch weights and export a deterministic TCE-owned `.tcennue` binary. This stage is Python-side only. The exported file is not integrated into the engine yet, and TCE will continue using the current engine evaluation path until the C/C++ loader and inference code are implemented.
+
+Export:
+
+```sh
+python3 tools/nnue_train/export_tcennue.py \
+  --checkpoint data/nnue_runs/baseline/checkpoints/best.pt \
+  --output data/nnue_runs/baseline/tce_baseline.tcennue
+```
+
+Inspect:
+
+```sh
+python3 tools/nnue_train/export_tcennue.py \
+  --inspect data/nnue_runs/baseline/tce_baseline.tcennue
+```
+
+The exporter stores:
+
+```text
+TCENNUE\0 magic bytes
+fixed little-endian header
+canonical JSON metadata
+tensor payloads in deterministic order
+trailing SHA256 checksum
+```
+
+Tensor order:
+
+```text
+ft_weight
+hidden1_weight
+hidden1_bias
+hidden2_weight
+hidden2_bias
+output_weight
+output_bias
+```
+
+Weights are quantized to `int16`; biases are stored as `int32`. Generated `.tcennue` files should stay under `data/` and should not be committed.
+
 ## CLI Arguments
 
 ```text
