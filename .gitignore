@@ -11,7 +11,8 @@ __pycache__/
 tce
 tools/nnue_train/check_tcennue_loader
 tools/nnue_train/check_tcennue_inference
-tools/nnue_train/test_vectors/inference_improved_tactical_sample.json
+tools/nnue_train/test_vectors/inference_improved*_sample.json
+graphify-out/
 
 # Local NNUE datasets and generated labels/features
 data/
