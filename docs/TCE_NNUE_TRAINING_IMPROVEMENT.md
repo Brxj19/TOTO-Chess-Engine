@@ -104,8 +104,11 @@ Build features:
 python3 tools/nnue_train/build_features.py \
   --input data/labels/tce_nnue_improved.csv \
   --output data/nnue/tce_nnue_improved_features.npz \
-  --clamp-cp 3000
+  --clamp-cp 3000 \
+  --keep-duplicates
 ```
+
+Use `--keep-duplicates` when the merged CSV intentionally oversamples tactical or blunder-window rows. Without it, feature building deduplicates FENs and removes the extra tactical weighting.
 
 Retrain with validation and early stopping:
 

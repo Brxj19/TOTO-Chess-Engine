@@ -60,6 +60,11 @@ def parse_args() -> argparse.Namespace:
         help="If output exists, keep existing rows and skip FENs already present there.",
     )
     parser.add_argument(
+        "--keep-duplicates",
+        action="store_true",
+        help="Keep duplicate FEN rows. Useful after intentional dataset oversampling.",
+    )
+    parser.add_argument(
         "--debug-fen",
         help="Print sparse feature IDs for one FEN and exit.",
     )
@@ -253,7 +258,7 @@ def build_features(args: argparse.Namespace) -> tuple[int, int, int, int]:
                 progress.update(1)
                 continue
 
-            if fen in seen_fens:
+            if not args.keep_duplicates and fen in seen_fens:
                 skipped_resume += 1
                 progress.update(1)
                 continue
@@ -280,7 +285,8 @@ def build_features(args: argparse.Namespace) -> tuple[int, int, int, int]:
                     "depth": depth,
                 }
             )
-            seen_fens.add(fen)
+            if not args.keep_duplicates:
+                seen_fens.add(fen)
             progress.update(1)
             progress.set_postfix(
                 kept=len(rows),
