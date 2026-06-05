@@ -141,9 +141,10 @@ def main() -> int:
 
     tests = [
         (
-            "default Stockfish backend",
+            "explicit Stockfish backend",
             [
                 ("uci", "uciok"),
+                ("setoption name EvalBackend value stockfish", "EvalBackend set to stockfish"),
                 ("isready", "readyok"),
                 ("position startpos", None),
                 (f"go depth {args.depth}", "bestmove"),

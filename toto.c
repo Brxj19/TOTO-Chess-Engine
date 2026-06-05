@@ -270,7 +270,7 @@ int fifty;
 char evalFile[256] = "nn-eba324f53044.nnue"; // default path
 
 enum { eval_backend_stockfish, eval_backend_tce };
-int evalBackend = eval_backend_stockfish;
+int evalBackend = eval_backend_tce;
 int tceNnueLoaded = 0;
 int tceNnueFallbackWarned = 0;
 
@@ -4298,7 +4298,7 @@ void uci_loop()
             printf("id name TCE %s\n", version);
             printf("id author Brxj19\n");
             printf("option name Hash type spin default 64 min 4 max %d\n", max_hash);
-            printf("option name EvalBackend type combo default stockfish var stockfish var tce\n");
+            printf("option name EvalBackend type combo default tce var stockfish var tce\n");
             printf("option name EvalFile type string default nn-eba324f53044.nnue\n");
             printf("option name Depth type spin default 64 min 1 max 64\n");
             printf("uciok\n");

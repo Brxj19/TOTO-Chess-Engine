@@ -257,7 +257,7 @@ This stage still does not call the new NNUE from `evaluate()`, does not modify s
 
 ## Optional Engine Backend Smoke Test
 
-TCE can optionally load the TCE-owned `.tcennue` backend through UCI. Stockfish NNUE remains the default backend, so this only changes evaluation when `EvalBackend` is explicitly set to `tce`.
+TCE can load the TCE-owned `.tcennue` backend through UCI. The `tce` backend is now the default selector, but a valid `.tcennue` file still has to be loaded with `EvalFile`; if loading fails, the engine falls back to the Stockfish NNUE path instead of crashing.
 
 ```sh
 make
@@ -270,7 +270,7 @@ position startpos
 go depth 1
 ```
 
-To return to the default backend in the same session:
+To use the Stockfish backend explicitly in the same session:
 
 ```text
 setoption name EvalBackend value stockfish
