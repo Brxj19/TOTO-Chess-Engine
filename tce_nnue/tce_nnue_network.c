@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define TCE_NNUE_STACK_HALF_DIM 256
+#define TCE_NNUE_STACK_HIDDEN1_DIM 128
+#define TCE_NNUE_STACK_HIDDEN2_DIM 64
+
 typedef struct {
     double ft_weight;
     double hidden1_weight;
@@ -185,10 +189,15 @@ int tce_nnue_evaluate_sparse(
     const int16_t *output_weight;
     const int32_t *output_bias;
     TceNnueScales scales;
-    int32_t *white_acc = NULL;
-    int32_t *black_acc = NULL;
-    double *hidden1 = NULL;
-    double *hidden2 = NULL;
+    int32_t white_acc_stack[TCE_NNUE_STACK_HALF_DIM];
+    int32_t black_acc_stack[TCE_NNUE_STACK_HALF_DIM];
+    double hidden1_stack[TCE_NNUE_STACK_HIDDEN1_DIM];
+    double hidden2_stack[TCE_NNUE_STACK_HIDDEN2_DIM];
+    int32_t *white_acc = white_acc_stack;
+    int32_t *black_acc = black_acc_stack;
+    double *hidden1 = hidden1_stack;
+    double *hidden2 = hidden2_stack;
+    int heap_scratch = 0;
     const int32_t *stm_acc;
     const int32_t *opp_acc;
     double output;
@@ -231,13 +240,18 @@ int tce_nnue_evaluate_sparse(
         !hidden2_bias || !output_weight || !output_bias)
         return 1;
 
-    white_acc = (int32_t *)malloc((size_t)header->half_dim * sizeof(*white_acc));
-    black_acc = (int32_t *)malloc((size_t)header->half_dim * sizeof(*black_acc));
-    hidden1 = (double *)malloc((size_t)header->hidden1_dim * sizeof(*hidden1));
-    hidden2 = (double *)malloc((size_t)header->hidden2_dim * sizeof(*hidden2));
-    if (!white_acc || !black_acc || !hidden1 || !hidden2) {
-        fprintf(stderr, "tce_nnue: out of memory during inference\n");
-        goto done;
+    if (header->half_dim > TCE_NNUE_STACK_HALF_DIM ||
+        header->hidden1_dim > TCE_NNUE_STACK_HIDDEN1_DIM ||
+        header->hidden2_dim > TCE_NNUE_STACK_HIDDEN2_DIM) {
+        white_acc = (int32_t *)malloc((size_t)header->half_dim * sizeof(*white_acc));
+        black_acc = (int32_t *)malloc((size_t)header->half_dim * sizeof(*black_acc));
+        hidden1 = (double *)malloc((size_t)header->hidden1_dim * sizeof(*hidden1));
+        hidden2 = (double *)malloc((size_t)header->hidden2_dim * sizeof(*hidden2));
+        heap_scratch = 1;
+        if (!white_acc || !black_acc || !hidden1 || !hidden2) {
+            fprintf(stderr, "tce_nnue: out of memory during inference\n");
+            goto done;
+        }
     }
 
     if (tce_nnue_refresh_accumulator(ft_weight, (int)header->half_dim,
@@ -270,9 +284,11 @@ int tce_nnue_evaluate_sparse(
     result = 0;
 
 done:
-    free(white_acc);
-    free(black_acc);
-    free(hidden1);
-    free(hidden2);
+    if (heap_scratch) {
+        free(white_acc);
+        free(black_acc);
+        free(hidden1);
+        free(hidden2);
+    }
     return result;
 }

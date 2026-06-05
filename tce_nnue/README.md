@@ -1,6 +1,6 @@
 # TCE NNUE Loader
 
-This directory contains the first C-side support for TCE-owned `.tcennue` files.
+This directory contains the C-side support for TCE-owned `.tcennue` files.
 
 Current scope:
 
@@ -10,9 +10,10 @@ Current scope:
 - validate the expected tensor names, dtypes, offsets, and sizes;
 - verify the trailing SHA256 checksum;
 - expose `tce_nnue_load()` and `tce_nnue_free()`.
-- run standalone scalar sparse inference with `tce_nnue_evaluate_sparse()`.
+- run scalar sparse inference with `tce_nnue_evaluate_sparse()`;
+- support the optional engine evaluation backend selected by UCI `EvalBackend`.
 
-This is still standalone infrastructure. The loaded network is not used by engine evaluation yet. TCE still uses the existing Stockfish NNUE integration, and neither `init_all()` nor `evaluate()` calls this loader or inference path.
+The TCE-owned backend is integrated through `evaluate()`, but the Stockfish NNUE path is still present and remains the safe fallback. The UCI backend selector currently defaults to `tce`; a valid `.tcennue` must still be loaded through `EvalFile`, otherwise evaluation falls back to the Stockfish NNUE evaluator instead of crashing.
 
 Current parity workflow:
 
@@ -29,4 +30,4 @@ make check-tcennue-infer \
   VECTORS=tools/nnue_train/test_vectors/inference_sample.json
 ```
 
-The next stage is engine-side integration planning after scalar inference parity is stable. That later stage should decide how to pass TCE board state into this module without changing search semantics accidentally.
+The next runtime stage is performance work after strength validation: keep scalar parity stable, avoid hot-path allocation, then consider incremental accumulators and SIMD.
