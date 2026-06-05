@@ -8,6 +8,8 @@ import csv
 import random
 from pathlib import Path
 
+import chess
+
 
 EXPECTED_COLUMNS = ["fen", "eval_cp", "best_move", "depth"]
 
@@ -22,6 +24,11 @@ def parse_args() -> argparse.Namespace:
         action="append",
         default=[],
         help="Oversample FILE:FACTOR, for example data/labels/tactical.csv:5.",
+    )
+    parser.add_argument(
+        "--add-mirrors",
+        action="store_true",
+        help="Add color-swapped mirrored FEN rows to balance side-to-move coverage.",
     )
     return parser.parse_args()
 
@@ -48,6 +55,42 @@ def parse_oversamples(values: list[str]) -> dict[str, int]:
             raise ValueError("oversample factor must be at least 1")
         result[str(Path(path_text))] = factor
     return result
+
+
+def mirror_uci_move(move_text: str) -> str:
+    if not move_text:
+        return ""
+    try:
+        move = chess.Move.from_uci(move_text)
+    except ValueError:
+        return ""
+    mirrored = chess.Move(
+        chess.square_mirror(move.from_square),
+        chess.square_mirror(move.to_square),
+        promotion=move.promotion,
+        drop=move.drop,
+    )
+    return mirrored.uci()
+
+
+def mirrored_row(row: dict[str, str]) -> dict[str, str] | None:
+    try:
+        board = chess.Board(row["fen"])
+    except ValueError:
+        return None
+    if not board.is_valid():
+        return None
+
+    mirrored = board.mirror()
+    if not mirrored.is_valid():
+        return None
+
+    return {
+        "fen": mirrored.fen(),
+        "eval_cp": row["eval_cp"],
+        "best_move": mirror_uci_move(row.get("best_move", "")),
+        "depth": row["depth"],
+    }
 
 
 def main() -> None:
@@ -77,6 +120,14 @@ def main() -> None:
     extras = [row for row in extra_rows if row["fen"].strip() in seen]
     deduped.extend(extras)
 
+    if args.add_mirrors:
+        mirrored_rows: list[dict[str, str]] = []
+        for row in list(deduped):
+            mirror = mirrored_row(row)
+            if mirror is not None:
+                mirrored_rows.append(mirror)
+        deduped.extend(mirrored_rows)
+
     random.Random(args.seed).shuffle(deduped)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8", newline="") as output_file:
@@ -84,7 +135,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(deduped)
 
-    print(f"Wrote {len(deduped)} unique rows to {args.output}")
+    print(f"Wrote {len(deduped)} rows to {args.output}")
 
 
 if __name__ == "__main__":
